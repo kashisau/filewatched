@@ -22,8 +22,8 @@ namespace filewatched
       {
           _logger.LogInformation("Starting daemon: " + _config.Value.DaemonName);
           _logger.LogInformation("Starting daemon: " + _config.Value.Path);
-          if (_watcher == null) _watcher = new Watcher(_config.Value.Path, _logger);
-          Task.Run(() => _watcher.StartWatch(cancellationToken));
+          if (_watcher == null) _watcher = new Watcher(_config.Value.Path, _logger, cancellationToken);
+          Task.Run(() => _watcher.StartWatch());
           return Task.CompletedTask;
       }
 

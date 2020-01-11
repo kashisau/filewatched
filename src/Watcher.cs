@@ -12,16 +12,18 @@ namespace filewatched {
     private readonly ILogger _logger;
     private readonly Queue<string> _changedFiles;
     private readonly string _path;
+    private readonly CancellationToken _cancellationToken;
 
-    public Watcher(string Path, ILogger logger)
+    public Watcher(string Path, ILogger logger, CancellationToken cancellationToken)
     {
       _changedFiles = new Queue<string>();
       _path = Path;
       _logger = logger;
+      _cancellationToken = cancellationToken;
       TransferQueue.SetLogger(logger);
     }
 
-    public async Task StartWatch(CancellationToken cancellationToken)
+    public void StartWatch()
     {
         // Create a new FileSystemWatcher and set its properties.
         using (FileSystemWatcher watcher = new FileSystemWatcher())
@@ -49,7 +51,7 @@ namespace filewatched {
             // Begin watching.
             watcher.EnableRaisingEvents = true;
 
-            while ( ! cancellationToken.IsCancellationRequested) ;
+            while ( ! _cancellationToken.IsCancellationRequested) ;
         }
     }
 

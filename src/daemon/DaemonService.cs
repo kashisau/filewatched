@@ -11,20 +11,23 @@ namespace filewatched
     {
       private readonly ILogger _logger;
       private readonly IOptions<DaemonConfig> _config;
-      private Watcher _watcher;
+      private FileWatcher _watcher;
       public DaemonService(ILogger<DaemonService> logger, IOptions<DaemonConfig> config)
       {
           _logger = logger;
           _config = config;
       }
 
-      public Task StartAsync(CancellationToken cancellationToken)
+      public async Task StartAsync(CancellationToken cancellationToken)
       {
-          _logger.LogInformation("Starting daemon: " + _config.Value.DaemonName);
-          _logger.LogInformation("Starting daemon: " + _config.Value.Path);
-          if (_watcher == null) _watcher = new Watcher(_config.Value.Path, _logger, cancellationToken);
-          Task.Run(() => _watcher.StartWatch());
-          return Task.CompletedTask;
+          var path = _config.Value.Path;
+          var daemonName = _config.Value.DaemonName;
+          if (_watcher == null) _watcher = new FileWatcher(path, _logger, cancellationToken);
+          var scanner = new FileScanner(path, _logger);
+          var files = await scanner.Scan();
+          _logger.LogInformation($"Starting daemon: {daemonName} on directory {path}.");
+          var watchTask = Task.Run(() => _watcher.StartWatch());
+          return;
       }
 
       public Task StopAsync(CancellationToken cancellationToken)

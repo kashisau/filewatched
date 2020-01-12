@@ -7,14 +7,14 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace filewatched {
-  public class Watcher
+  public class FileWatcher
   {
     private readonly ILogger _logger;
     private readonly Queue<string> _changedFiles;
     private readonly string _path;
     private readonly CancellationToken _cancellationToken;
 
-    public Watcher(string Path, ILogger logger, CancellationToken cancellationToken)
+    public FileWatcher(string Path, ILogger logger, CancellationToken cancellationToken)
     {
       _changedFiles = new Queue<string>();
       _path = Path;

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -68,8 +70,17 @@ namespace filewatched
                 data = Encoding.ASCII.GetString(bytes, 0, i);
                 _logger.LogInformation($"Client connected. ID: {data}");
 
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(stream, files);
+                using (MemoryStream fileListMs = new MemoryStream())
+                {
+                  BinaryFormatter bf = new BinaryFormatter();
+                  bf.Serialize(fileListMs, files);
+                  using (GZipStream gzFiles = new GZipStream(fileListMs, CompressionLevel.Optimal))
+                  {
+                    gzFiles.CopyTo(stream);
+                    gzFiles.Close();
+                  }
+                  fileListMs.Close();
+                }
             }
         }
         catch(Exception e)

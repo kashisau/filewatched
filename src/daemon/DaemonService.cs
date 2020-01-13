@@ -24,14 +24,14 @@ namespace filewatched
           var daemonName = _config.Value.DaemonName;
           if (_watcher == null) _watcher = new FileWatcher(path, _logger, cancellationToken);
           var scanner = new FileScanner(path, _logger);
+          var files = await scanner.Scan();
           Thread t = new Thread(delegate ()
               {
                   // replace the IP with your system IP Address...
-                  Server myserver = new Server("0.0.0.0", 13000, _logger, cancellationToken);
+                  Server myserver = new Server("0.0.0.0", 13000, _logger, files, cancellationToken);
               }
           );
           t.Start();
-          var files = await scanner.Scan();
           _logger.LogInformation($"Starting daemon: {daemonName} on directory {path}.");
           var watchTask = Task.Run(() => _watcher.StartWatch());
           return;

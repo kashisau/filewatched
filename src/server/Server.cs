@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -14,11 +16,14 @@ namespace filewatched
      readonly ILogger _logger;
      CancellationToken cancellationToken;
 
-    public Server(string ip, int port, ILogger logger, CancellationToken cancellationToken)
+     List<string> files;
+
+    public Server(string ip, int port, ILogger logger, List<string> files, CancellationToken cancellationToken)
     {
         this._logger = logger;
         this.cancellationToken = cancellationToken;
         this.port = port;
+        this.files = files;
         IPAddress localAddr = IPAddress.Parse(ip);
         server = new TcpListener(localAddr, port);
         server.Start();
@@ -61,12 +66,10 @@ namespace filewatched
             {
                 string hex = BitConverter.ToString(bytes);
                 data = Encoding.ASCII.GetString(bytes, 0, i);
-                Console.WriteLine("{1}: Received: {0}", data, Thread.CurrentThread.ManagedThreadId); 
+                _logger.LogInformation($"Client connected. ID: {data}");
 
-                string str = "Hey Device!";
-                Byte[] reply = System.Text.Encoding.ASCII.GetBytes(str);   
-                stream.Write(reply, 0, reply.Length);
-                _logger.LogInformation($"{str}: Sent: {Thread.CurrentThread.ManagedThreadId}");
+                BinaryFormatter bf = new BinaryFormatter();
+                bf.Serialize(stream, files);
             }
         }
         catch(Exception e)

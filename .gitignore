@@ -4,7 +4,8 @@ project.lock.json
 .DS_Store
 *.pyc
 nupkg/
-!appsettings.development.json
+!appsettings.example.json
+**/appsettings.development.json
 **/appsettings.staging.json
 **/appsettings.production.json
 **/appsettings.json

@@ -6,6 +6,7 @@ namespace filewatched
     {
         public string DaemonName { get; set; }
         public string Path { get; set; }
+        public Int32 Port { get; set; }
 
     }
 }

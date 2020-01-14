@@ -16,6 +16,7 @@ namespace filewatched
      TcpListener server;
      IPAddress localAddr;
      int port;
+     string serverPath;
      readonly ILogger _logger;
      CancellationToken cancellationToken;
      
@@ -23,11 +24,12 @@ namespace filewatched
 
      List<string> files;
 
-    public Server(string ip, int port, ILogger logger, List<string> files)
+    public Server(string ip, int port, string serverPath, List<string> files, ILogger logger)
     {
         this._logger = logger;
         this.port = port;
         this.files = files;
+        this.serverPath = serverPath;
         this.localAddr = IPAddress.Parse(ip);
         this.server = new TcpListener(localAddr, port);
     }
@@ -88,7 +90,12 @@ namespace filewatched
                 _logger.LogInformation($"Client connected. ID: {data}");
 
                 BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(stream, files);
+                ServerFiles serverFiles = new ServerFiles() {
+                    ServerPath = "some path",
+                    Files = files
+                };
+
+                bf.Serialize(stream, serverFiles);
             }
         }
         catch(Exception e)

@@ -34,7 +34,7 @@ namespace filewatched
                 watch.Stop();
                 _logger.LogInformation($"Found {files.Count} files in {watch.ElapsedMilliseconds}ms.");
                 // Start the server
-                var server = new Server("0.0.0.0", (Int32) 13000, _logger, files);
+                var server = new Server("0.0.0.0", _options.Port, _options.Path, files, _logger);
                 await server.StartListener(stoppingToken);
                 // Watch the file system
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);

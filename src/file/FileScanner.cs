@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using System.Threading;
+using System.ComponentModel;
 
 namespace filewatched
 {
@@ -19,26 +21,35 @@ namespace filewatched
       this._logger = logger;
       this.path = path;
     }
+    BackgroundWorker fileScanWorker;
 
-    public async Task<List<string>> Scan()
+    public async Task<List<string>> ScanAsync(CancellationToken cancellationToken) {
+      fileScanWorker = new BackgroundWorker();
+      fileScanWorker.WorkerReportsProgress = false;
+      fileScanWorker.RunWorkerCompleted += (object sender, RunWorkerCompletedEventArgs e) => files = (List<string>) e.Result;
+      fileScanWorker.DoWork += Scan;
+      fileScanWorker.RunWorkerAsync();
+
+      while (files == null) {
+        if (cancellationToken.IsCancellationRequested) {
+          _logger.LogInformation($"Cancellation requested during file scan.");
+          fileScanWorker.CancelAsync();
+          fileScanWorker.Dispose();
+          return null;
+        }
+        await Task.Delay(100);
+      }
+      return files;
+    }
+    private void Scan(object sender, DoWorkEventArgs e)
     {
       try 
       {
-          var fileEnumeration = Task.Run(() =>
-          {
-            var watch = new Stopwatch();
-            watch.Start();
-
-            // Obtain the file system entries in the directory path.
-            string[] directoryEntries =
-                Directory.GetFileSystemEntries(path, "*", SearchOption.AllDirectories); 
-
-            watch.Stop();
-            _logger.LogInformation($"Enumerated {directoryEntries.Length} in {watch.ElapsedMilliseconds/1000} seconds.");
-            files = new List<string>(directoryEntries);
-            return files;
-          });
-          return await fileEnumeration;
+          // Obtain the file system entries in the directory path.
+          string[] directoryEntries =
+              Directory.GetFileSystemEntries(path, "*", SearchOption.AllDirectories); 
+          var files = new List<string>(directoryEntries);
+          e.Result = files;
       }
       catch (ArgumentNullException) 
       {
@@ -60,7 +71,6 @@ namespace filewatched
           System.Console.WriteLine("The path encapsulated in the " + 
               "Directory object does not exist.");
       }
-      return null;
     }
   }
 }

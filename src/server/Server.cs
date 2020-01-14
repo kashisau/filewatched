@@ -1,54 +1,73 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace filewatched
 {
   public class Server
   {
-     TcpListener server = null;
+     TcpListener server;
+     IPAddress localAddr;
      int port;
      readonly ILogger _logger;
      CancellationToken cancellationToken;
+     
+     BackgroundWorker listeningServerWorker;
 
      List<string> files;
 
-    public Server(string ip, int port, ILogger logger, List<string> files, CancellationToken cancellationToken)
+    public Server(string ip, int port, ILogger logger, List<string> files)
     {
         this._logger = logger;
-        this.cancellationToken = cancellationToken;
         this.port = port;
         this.files = files;
-        IPAddress localAddr = IPAddress.Parse(ip);
-        server = new TcpListener(localAddr, port);
-        server.Start();
-        StartListener();
+        this.localAddr = IPAddress.Parse(ip);
+        this.server = new TcpListener(localAddr, port);
     }
 
-    public void StartListener()
+    public async Task StartListener(CancellationToken cancellationToken)
+    {
+        server.Start();
+        this.cancellationToken = cancellationToken;
+        listeningServerWorker = new BackgroundWorker();
+        listeningServerWorker.WorkerReportsProgress = false;
+        listeningServerWorker.RunWorkerCompleted += (object sender, RunWorkerCompletedEventArgs e) => files = (List<string>) e.Result;
+        listeningServerWorker.DoWork += Scan;
+        listeningServerWorker.RunWorkerAsync();
+
+        while ( ! cancellationToken.IsCancellationRequested) {
+            await Task.Delay(100);
+        }
+        listeningServerWorker.CancelAsync();
+        listeningServerWorker.Dispose();
+    }
+
+    private void Scan(object sender, DoWorkEventArgs eventArgs)
     {
         try
-        {
-            while ( ! cancellationToken.IsCancellationRequested)
             {
-                _logger.LogInformation($"Waiting for a connection on port {port}");
-                TcpClient client = server.AcceptTcpClient();
-                _logger.LogInformation("Connected to a client.");
+                while ( ! cancellationToken.IsCancellationRequested)
+                {
+                    _logger.LogInformation($"Waiting for a connection on port {port}");
+                    TcpClient client = server.AcceptTcpClient();
+                    _logger.LogInformation("Connected to a client.");
 
-                Thread t = new Thread(new ParameterizedThreadStart(HandleDeivce));
-                t.Start(client);
+                    Thread t = new Thread(new ParameterizedThreadStart(HandleDeivce));
+                    t.Start(client);
+                }
             }
-        }
-        catch (SocketException e)
-        {
-            _logger.LogInformation($"SocketException: {e}");
-            server.Stop();
-        }
+            catch (SocketException e)
+            {
+                _logger.LogInformation($"SocketException: {e}");
+                server.Stop();
+            }
     }
 
     public void HandleDeivce(Object obj)

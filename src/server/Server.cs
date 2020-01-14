@@ -91,7 +91,7 @@ namespace filewatched
 
                 BinaryFormatter bf = new BinaryFormatter();
                 ServerFiles serverFiles = new ServerFiles() {
-                    ServerPath = "some path",
+                    ServerPath = this.serverPath,
                     Files = files
                 };
 

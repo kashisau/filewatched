@@ -45,10 +45,15 @@ namespace filewatched
     {
       try 
       {
+          var files = new List<string>();
           // Obtain the file system entries in the directory path.
-          string[] directoryEntries =
-              Directory.GetFileSystemEntries(path, "*", SearchOption.AllDirectories); 
-          var files = new List<string>(directoryEntries);
+          foreach (string path in Directory.GetFileSystemEntries(path, "*", SearchOption.AllDirectories))
+          {
+              FileAttributes att = File.GetAttributes(path);
+              // Skip directories.
+              if((att & FileAttributes.Directory) == FileAttributes.Directory) continue;
+              files.Add(path);
+          }
           e.Result = files;
       }
       catch (ArgumentNullException) 

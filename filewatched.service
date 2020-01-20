@@ -1,0 +1,11 @@
+[Unit]
+Description=filewatched daemon
+
+[Service]
+Type=notify
+ExecStart=/usr/sbin/filewatched
+WorkingDirectory=/etc/filewatched
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

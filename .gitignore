@@ -5,9 +5,9 @@ project.lock.json
 *.pyc
 nupkg/
 !appsettings.example.json
-**/appsettings.development.json
-**/appsettings.staging.json
-**/appsettings.production.json
+**/appsettings.[dD]evelopment.json
+**/appsettings.[pP]roduction.json
+**/appsettings.[sS]taging.json
 **/appsettings.json
 
 # Visual Studio Code

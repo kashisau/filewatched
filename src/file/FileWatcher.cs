@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace filewatched {
   public class FileWatcher

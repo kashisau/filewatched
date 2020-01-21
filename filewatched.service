@@ -1,11 +1,12 @@
 [Unit]
 Description=filewatched daemon
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=notify
 ExecStart=/usr/sbin/filewatched
 WorkingDirectory=/etc/filewatched
-Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

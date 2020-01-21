@@ -2,7 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <OutputType>Exe</OutputType>
     <UserSecretsId>dotnet-filewatched-B03868CB-2D6E-4340-8CD6-EC40DBE2D311</UserSecretsId>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishSingleFile>true</PublishSingleFile>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,4 +15,5 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="3.1.0" />
     <PackageReference Include="System.Runtime.Serialization.Formatters" Version="4.3.0" />
   </ItemGroup>
+
 </Project>
